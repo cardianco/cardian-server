@@ -1,0 +1,24 @@
+{
+    "name": "cardian/server",
+    "autoload": {
+        "psr-4": {
+            "cardian\\": "src"
+        }
+    },
+    "require": {
+        "webonyx/graphql-php": "^14.11",
+        "psr/log": "^1.1",
+        "workerman/workerman": "^4.1",
+        "monolog/monolog": "^2.8"
+    },
+    "description": "PHP tcp-server and API for Cardian.",
+    "license": "LGPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "SMR",
+            "email": "seyyedmortezarazavi76@gmail.com",
+            "homepage": "https://smr76.github.io",
+            "role": "Developer"
+        }
+    ]
+}
