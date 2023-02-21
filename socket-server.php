@@ -3,7 +3,7 @@
  * @author smr
  * @package dev
  * @version 0.1.0
- * @copyright LGPLv3
+ * @copyright MIT
  */
 if(file_exists(dirname(__FILE__).'/vendor/autoload.php')) {
 	require_once dirname(__FILE__).'/vendor/autoload.php';

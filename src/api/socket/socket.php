@@ -4,7 +4,7 @@
  * @author smr
  * @package dev
  * @version 0.1.0
- * @copyright LGPLv3
+ * @copyright MIT
  */
 namespace cardian\api\socket;
 
