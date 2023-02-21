@@ -19,7 +19,7 @@ CREATE TABLE `states` (
 
 -- initial state types:
 INSERT INTO db_cardian.`states`(`name`,`desc`)
-VALUES ('activated',''),('disabled',''),('suspended','');
+VALUES ('activated',''),('disabled',''),('suspended',''),('readonly','');
 
 CREATE TABLE fields (
     id bigint NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -29,7 +29,7 @@ CREATE TABLE fields (
 
 -- initial fields:
 INSERT INTO db_cardian.fields(`name`,`desc`)
-VALUES ('location',''),('temperature','');
+VALUES ('location',''),('temperature',''),('json','');
 
 CREATE TABLE users (
     id bigint NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -48,11 +48,10 @@ CREATE TABLE users_sessions (
     stid bigint NOT NULL DEFAULT 1, -- state id
     authtoken binary(32) NOT NULL UNIQUE, -- user token 256 bits (32 bytes)
     mac bigint NOT NULL, -- device mac
-    utc datetime NOT NULL DEFAULT CURRENT_TIMESTAMP, -- register UTC time
-    ts datetime NOT NULL DEFAULT CURRENT_TIMESTAMP, -- last access UTC time
+    register datetime NOT NULL DEFAULT CURRENT_TIMESTAMP, -- register UTC time
+    access datetime NOT NULL DEFAULT CURRENT_TIMESTAMP, -- last access UTC time
     ip varchar(32) NOT NULL, -- device IP in HEX (8/32 for v4/v6)
     port smallint NOT NULL, -- device port
-    `readonly` boolean NOT NULL DEFAULT FALSE, -- Is readonly
     FOREIGN KEY (`uid`) REFERENCES users(id),
     FOREIGN KEY (tid) REFERENCES device_type(id),
     FOREIGN KEY (stid) REFERENCES states(id)
@@ -70,7 +69,7 @@ CREATE TABLE boundaries (
 
 CREATE TABLE latest_status (
     id bigint NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `uid` bigint NOT NULL, -- session id
+    `uid` bigint NOT NULL UNIQUE, -- session id
     `data` json NOT NULL, -- creation date
     utc datetime NOT NULL DEFAULT CURRENT_TIMESTAMP, -- UTC time
     FOREIGN KEY (`uid`) REFERENCES users(id)
@@ -105,7 +104,6 @@ CREATE TABLE user_meta (
     `uid` bigint NOT NULL,
     `key` tinytext NOT NULL,
     `value` longtext NOT NULL,
-    utc datetime NOT NULL,
     FOREIGN KEY (`uid`) REFERENCES users(id)
 );
 
