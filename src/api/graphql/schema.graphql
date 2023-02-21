@@ -1,0 +1,112 @@
+schema {
+    query: Query
+    mutation: Mutation
+}
+
+type Mutation {
+    newStatus(fieldId: ID!, value: String!): ID!
+
+    sendCommand(fieldId: ID!, value: String!): ID!
+
+    createSession(typeId: ID!, mac: Int!): Session!
+
+    createBoundary(stateId: ID! = 1, poly: [Point!]): ID
+    updateBoundary(id: ID!, stateId: ID! = 1, poly: [Point!]): Boolean!
+
+    removeCommands(idList: ID!): Int
+    removeBoundaries(idList: ID): Int
+    terminateSessions(idList: [ID!]): Int
+}
+
+type Query {
+    user: User
+    boundaries: [Boundary!]
+    session: Session
+    sessions: [Session!]
+    latestStatus: LatestStatus!
+    statusHistory(limit: Int! = 1, accessed: Boolean = null): [Status!]
+    commandHistory(limit: Int! = 1, accessed: Boolean = null): [Command!]
+}
+
+type DeviceType {
+    id: ID!
+    name: String!
+    desc: String!
+}
+
+type State {
+    id: ID!
+    name: String!
+    desc: String!
+}
+
+type Field {
+    id: ID!
+    name: String!
+    desc: String!
+}
+
+type UserInfo {
+    phonenumber: String
+    email: String
+    privilege: Int
+}
+
+type User {
+    id: ID!
+    state: State!
+    token: String!
+    utc: Int
+    info: UserInfo!
+}
+
+type Session {
+    id: ID!
+    user: User!
+    type: DeviceType!
+    authtoken: String!
+    mac: String!
+    registerUTC: Int!
+    accessUTC: Int!
+    ip: String!
+    port: Int!
+}
+
+type Boundary {
+    id: ID!
+    session: Session!
+    state: State!
+    poly: [Point!]
+    utc: Int!
+}
+
+type Status {
+    id: ID!
+    session: Session!
+    fieldType: Field!
+    data: String!
+    utc: Int!
+    accessed: Boolean!
+    check: Boolean
+}
+
+type Command {
+    id: ID!
+    session: Session!
+    fieldType: Field!
+    data: String!
+    utc: Int!
+    accessed: Boolean!
+    check: Boolean
+}
+
+type LatestStatus {
+    id: ID!
+    user: User!
+    data: String
+}
+
+type Point {
+    x: Float!
+    y: Float!
+}
