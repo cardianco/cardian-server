@@ -32,7 +32,7 @@ class resolver {
                 return $user;
             },
             'Field' => fn($values, $args, $ctx, $inf) =>  $db->getFields($values['fid']),
-            'State' => fn($values, $args, $ctx, $inf) =>  $db->getStates($values['fid']),
+            'State' => fn($values, $args, $ctx, $inf) =>  $db->getStates($values['id']),
             'DeviceType' => fn($values, $args, $ctx, $inf) =>  $db->getDeviceType($values['tid']),
             'UserInfo' => fn($values, $args, $ctx, $inf) =>  $db->getUserInfo($values['id'])
         ];
@@ -78,15 +78,15 @@ class resolver {
         $mutations = [
             'newStatus' => function($root, $args, $ctx, $inf) use ($db) {
                 [$fid, $value] = [$args['fieldId'], $args['value']];
-                $fields = $db->getFieldsPair();
+                $field = $db->getFieldsPair()[$fid] ?? "json";
 
-                $jsonVal = $fields[$fid] != "json" ? [$fields[$fid] => $value] : $value;
+                $jsonString = json_encode([$field => json_decode($value)]);
 
-                $db->updateLatestStatus($root['uid'], $jsonVal);
-                return $db->addStatus($root['sid'], $fid, $value);
+                $db->updateLatestStatus($root['uid'], $jsonString);
+                return $db->addStatus($root['sid'], $fid, $jsonString);
             },
             'createSession' => function($root, $args, $ctx, $inf) use ($db) {
-                $session = $db->createSession($root['uid'], $args['tid'], $args['mac'], $root['ip']);
+                $session = $db->createSession($root['uid'], $args['typeId'], $args['mac'], $root['ip']);
                 $session['user'] = $inf->rootValue['User'];
                 $session['type'] = $inf->rootValue['DeviceType'];
                 return $session;

@@ -167,28 +167,35 @@ class database extends baseConnector {
      * @return bool|int, Number of affected rows, or false on failure.
      */
     public function updateLatestStatus(int $userId, string $data): bool|int {
+        $data = $this->strEscape($data);
         return $this->exec("INSERT INTO latest_status(`uid`, `data`) VALUES($userId, $data)
                                 ON DUPLICATE KEY UPDATE `data`=JSON_MERGE_PATCH(`data`, $data);");
     }
 
-    public function addStatus(int $sid, int $fid, string $data): int {
+    /**
+     * @abstract Insert a new status.
+     * @return int The inserted record ID or null on failure.
+     */
+    public function addStatus(int $sid, int $fid, string $data): ?int {
         $data = $this->strEscape($data);
-        $result = $this->first("INSERT INTO db_cardian.statuses(`sid`, fid, `data`) VALUES($sid, $fid, $data);".
-                               "SELECT LAST_INSERT_ID() as id");
-        return $result['id'] ?? 0;
+        $this->exec("INSERT INTO db_cardian.statuses(`sid`, fid, `data`) VALUES($sid, $fid, $data)");
+        return $this->first("SELECT LAST_INSERT_ID() as id")['id'] ?: null;
     }
 
-    public function addCommand(int $sid, int $fid, string $data): int {
+    /**
+     * @abstract Insert a new command to be run.
+     * @return int The inserted record ID or null on failure.
+     */
+    public function addCommand(int $sid, int $fid, string $data): ?int {
         $data = $this->strEscape($data);
-        $res = $this->first("INSERT INTO commands(`sid`, fid, `data`) VALUES($sid, $fid, $data);".
-                            "SELECT LAST_INSERT_ID() as id");
-        return $res['id'] ?? 0;
+        $this->exec("INSERT INTO commands(`sid`, fid, `data`) VALUES($sid, $fid, $data)");
+        return $this->first("SELECT LAST_INSERT_ID() as id")['id'] ?: null;
     }
 
     public function addBoundary(int $sid, int $stid, array $pointList): ?int {
         $poly = $this->strEscape($this->toSqlPoly($pointList));
-        return $this->first("INSERT INTO boundaries(`sid`, `stid`, `poly`) VALUES($sid, $stid, ST_GeomFromText($poly));".
-                           "SELECT LAST_INSERT_ID() as id")['id'] ?: null;
+        $this->exec("INSERT INTO boundaries(`sid`, `stid`, `poly`) VALUES($sid, $stid, ST_GeomFromText($poly));");
+        return $this->first("SELECT LAST_INSERT_ID() as id")['id'] ?: null;
     }
 
     /**
@@ -214,14 +221,13 @@ class database extends baseConnector {
     public function createSession(int $uid, int $typeId, int $mac, string $ip, int $try = 5): array {
         $ip = $this->strEscape($ip);
         do {
-            $res = $this->first("INSERT INTO db_cardian.users_sessions(`uid`, tid, authtoken, mac, ip)
-                                    VALUES($uid, $typeId, UNHEX(SHA2(RAND(), 256)), $mac, $ip);".
-                                "SELECT id,`uid`,tid,stid,hex(authtoken) as authtoken,mac,UNIX_TIMESTAMP(register) as registerUTC,
-                                    UNIX_TIMESTAMP(access) as accessUTC, ip
-                                    From users_sessions WHERE id=LAST_INSERT_ID()");
+            $res = $this->exec("INSERT INTO db_cardian.users_sessions(`uid`, tid, authtoken, mac, ip)
+                                    VALUES($uid, $typeId, UNHEX(SHA2(RAND(), 256)), $mac, $ip);");
             $try--;
         } while(empty($res) && $try);
-        return $res;
+        $session = $this->first("SELECT id,`uid`,tid,stid,hex(authtoken) as authtoken,mac,UNIX_TIMESTAMP(register) as registerUTC,
+                                        UNIX_TIMESTAMP(access) as accessUTC, ip From users_sessions WHERE id=LAST_INSERT_ID()");
+        return $session;
     }
 
     public function removeCommands(array $idList): bool|int {

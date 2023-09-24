@@ -33,12 +33,13 @@ try {
 
     $input = json_decode($rawInput, true);
     $query = $input['query'] ?? "";
-    $query = "{boundaries{id,poly{x,y}}}";
     $variables = $input['variables'] ?? null;
 
     $result = GraphQL::executeQuery($schema, $query, $rootValue, null, $variables);
 } catch (Throwable $e) {
-    $result = ['error' => ['message' => $e->getMessage()]];
+    $result = ['error' => [
+        'message' => $e->getMessage()
+    ]];
 }
 
 header('Content-Type: application/json; charset=UTF-8');

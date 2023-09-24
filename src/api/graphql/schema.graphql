@@ -4,9 +4,9 @@ schema {
 }
 
 type Mutation {
-    newStatus(fieldId: ID!, value: String!): ID!
+    newStatus(fieldId: ID!, value: String!): ID
 
-    sendCommand(fieldId: ID!, value: String!): ID!
+    sendCommand(fieldId: ID!, value: String!): ID
 
     createSession(typeId: ID!, mac: Int!): Session!
 
@@ -87,7 +87,6 @@ type Status {
     data: String!
     utc: Int!
     accessed: Boolean!
-    check: Boolean
 }
 
 type Command {
@@ -97,7 +96,6 @@ type Command {
     data: String!
     utc: Int!
     accessed: Boolean!
-    check: Boolean
 }
 
 type LatestStatus {

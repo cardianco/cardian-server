@@ -47,7 +47,7 @@ abstract class baseConnector {
      */
     public function first(string $query = ""): array {
         $result = $this->connection->query($query);
-        return $result->fetch(\PDO::FETCH_ASSOC);
+        return $result->fetch(\PDO::FETCH_ASSOC) ?: [];
     }
 
     /**
