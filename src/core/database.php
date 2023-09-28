@@ -29,7 +29,8 @@ class database extends baseConnector {
      * @return array, SQL polygon as associative array.
      */
     public static function toSqlPoly(array $points): string {
-        return join(array_map(fn($v) => "$v[x] $v[y]", $points), ",");
+        if(end($points) !== @$points[0]) $points[] = $points[0]; /// Close polygon if first and end are not the same.
+        return "POLYGON((".join(',', array_map(fn($v) => "$v[x] $v[y]", $points))."))";
     }
 
     /**
@@ -38,7 +39,7 @@ class database extends baseConnector {
      */
     public function findUserIdByToken(string $token): ?int {
         $token = $this->strEscape($token);
-        $user = $this->first("SELECT id FROM `states` WHERE token=$token");
+        $user = $this->first("SELECT id FROM `users` WHERE hex(token)=$token");
         return $user ? $user['id'] : false;
     }
 
@@ -119,37 +120,58 @@ class database extends baseConnector {
                                 FROM `users_sessions` WHERE `uid`=$userId");
     }
 
-    public function getStatusHistory(?int $sessionId, int $limit = 1, $accessed = false): ?array {
+    public function getStatusHistory(?int $sessionId, int $limit = 1, int $start = -1, ?bool $accessed = false): ?array {
         if(is_null($sessionId)) return null;
 
-        $aw = is_bool($accessed) ? "AND accessed=$accessed" : "";
-        return $this->all("SELECT id,fid,`data`,UNIX_TIMESTAMP(utc) as utc,accessed
-                                FROM `statuses` WHERE `sid`=$sessionId $aw ORDER BY id DESC LIMIT $limit");
+        $this->connection->beginTransaction();
+
+        $condition = is_bool($accessed) ? "AND accessed=$accessed" : "";
+        $rows = $this->all("SELECT id,fid,`data`,UNIX_TIMESTAMP(utc) as utc,accessed
+                                    FROM `statuses` WHERE `sid`=$sessionId AND $start < `id` $condition ORDER BY id DESC LIMIT $limit");
+        $num = $this->exec("UPDATE `statuses` SET `accessed`=true ORDER BY id DESC LIMIT $limit");
+
+        if(is_bool($accessed) && !$accessed && $num !== count($rows)) {
+            $this->connection->rollback();
+        }
+
+        $this->connection->commit();
+        return $rows;
     }
 
-    public function getCommandHistory(int $sessionId, int $limit = 1, $accessed = false): ?array {
+    public function getCommandHistory(int $sessionId, int $limit = 1, int $start = -1, ?bool $accessed = false): ?array {
         if(is_null($sessionId)) return null;
 
-        $accCnd = is_bool($accessed) ? "AND accessed=$accessed" : "";
-        return $this->all("SELECT id,fid,`data`,UNIX_TIMESTAMP(utc) as utc,accessed
-                                FROM `commands` WHERE `sid`=$sessionId $accCnd ORDER BY id DESC LIMIT $limit");
+        $this->connection->beginTransaction();
+
+        $condition = is_bool($accessed) ? "AND accessed=$accessed" : "";
+        $rows = $this->all("SELECT id,fid,`data`,UNIX_TIMESTAMP(utc) as utc,accessed
+                                    FROM `commands` WHERE `sid`=$sessionId AND $start < `id` $condition ORDER BY id DESC LIMIT $limit");
+        $num = $this->exec("UPDATE `commands` SET `accessed`=true ORDER BY id DESC LIMIT $limit");
+
+        if(is_bool($accessed) && !$accessed && $num !== count($rows)) {
+            $this->connection->rollback();
+        }
+
+        $this->connection->commit();
+
+        return $rows;
     }
 
-    public function getBoundariesByUser(int $userId): array {
-        $bndry = $this->all("SELECT b.id, us.id as `sid`, us.uid, ST_AsText(b.poly) as poly, UNIX_TIMESTAMP(utc) as utc
+    public function getBoundariesByUser(int $userId, int $start = -1): array {
+        $boundary = $this->all("SELECT b.id, us.id as `sid`, b.stid, us.uid, ST_AsText(b.poly) as poly, UNIX_TIMESTAMP(utc) as utc
                                         FROM `boundaries` as b JOIN users_sessions as us on b.`sid`=us.id
-                                        WHERE `uid`=$userId;");
+                                        WHERE `uid`=$userId AND $start < b.id");
         return array_map(function ($v) {
             return array_merge($v, ['poly' => database::fromSqlPoly($v['poly'])]);
-        }, $bndry);
+        }, $boundary);
     }
 
     public function getBoundariesBySession(int $sessionId): array {
-        $bndry = $this->all("SELECT id,`sid`,ST_AsText(b.poly) as poly, UNIX_TIMESTAMP(utc) as utc
+        $boundary = $this->all("SELECT id,`sid`,ST_AsText(b.poly) as poly, UNIX_TIMESTAMP(utc) as utc
                                 FROM `boundaries` WHERE `sid`=$sessionId");
         return array_map(function ($v) {
             return array_merge($v, ['poly' => database::fromSqlPoly($v['poly'])]);
-        }, $bndry);
+        }, $boundary);
     }
 
     public function getLatestStatus(int $userId): array {
@@ -179,7 +201,7 @@ class database extends baseConnector {
     public function addStatus(int $sid, int $fid, string $data): ?int {
         $data = $this->strEscape($data);
         $this->exec("INSERT INTO db_cardian.statuses(`sid`, fid, `data`) VALUES($sid, $fid, $data)");
-        return $this->first("SELECT LAST_INSERT_ID() as id")['id'] ?: null;
+        return $this->connection->lastInsertId();
     }
 
     /**
@@ -189,13 +211,13 @@ class database extends baseConnector {
     public function addCommand(int $sid, int $fid, string $data): ?int {
         $data = $this->strEscape($data);
         $this->exec("INSERT INTO commands(`sid`, fid, `data`) VALUES($sid, $fid, $data)");
-        return $this->first("SELECT LAST_INSERT_ID() as id")['id'] ?: null;
+        return $this->connection->lastInsertId();
     }
 
     public function addBoundary(int $sid, int $stid, array $pointList): ?int {
         $poly = $this->strEscape($this->toSqlPoly($pointList));
         $this->exec("INSERT INTO boundaries(`sid`, `stid`, `poly`) VALUES($sid, $stid, ST_GeomFromText($poly));");
-        return $this->first("SELECT LAST_INSERT_ID() as id")['id'] ?: null;
+        return $this->connection->lastInsertId();
     }
 
     /**
@@ -231,12 +253,12 @@ class database extends baseConnector {
     }
 
     public function removeCommands(array $idList): bool|int {
-        $str = join($idList, ',');
+        $str = join(',', $idList);
         return count($idList) ? $this->exec("DELETE FROM commands WHERE `id` IN ($str)") : false;
     }
 
     public function removeBoundaries(array $idList): bool|int {
-        $str = join($idList, ',');
+        $str = join(',', $idList);
         return count($idList) ? $this->exec("DELETE FROM boundaries WHERE `id` IN ($str)") : false;
     }
 
@@ -244,7 +266,7 @@ class database extends baseConnector {
      *  @param array $idList
      */
     public function terminateSessions(array $idList): bool|int {
-        $str = join($idList, ',');
+        $str = join(',', $idList);
         return count($idList) ? $this->exec("DELETE FROM users_sessions WHERE `id` IN ($str)") : false;
     }
 }

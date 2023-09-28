@@ -32,7 +32,7 @@ class resolver {
                 return $user;
             },
             'Field' => fn($values, $args, $ctx, $inf) =>  $db->getFields($values['fid']),
-            'State' => fn($values, $args, $ctx, $inf) =>  $db->getStates($values['id']),
+            'State' => fn($values, $args, $ctx, $inf) =>  $db->getStates($values['stid']),
             'DeviceType' => fn($values, $args, $ctx, $inf) =>  $db->getDeviceType($values['tid']),
             'UserInfo' => fn($values, $args, $ctx, $inf) =>  $db->getUserInfo($values['id'])
         ];
@@ -48,8 +48,8 @@ class resolver {
                 return $userSessions;
             },
             'statusHistory' => function($root, $args, $ctx, $inf) use ($db) {
-                [$sid, $limit, $accessed] = [$root['sid'], $args['limit'], $args['accessed']];
-                $hist = $db->getStatusHistory($sid, $limit, $accessed);
+                [$sid, $limit, $start, $accessed] = [$root['sid'], $args['limit'], $args['start'], $args['accessed']];
+                $hist = $db->getStatusHistory($sid, $limit, $start, $accessed);
 
                 foreach($hist as &$h) $h['session'] = $root['Session'];
                 foreach($hist as &$h) $h['fieldType'] = $root['Field'];
@@ -57,8 +57,8 @@ class resolver {
                 return $hist;
             },
             'commandHistory' => function($root, $args, $ctx, $inf) use ($db) {
-                [$sid, $limit, $accessed] = [$root['sid'], $args['limit'], $args['accessed']];
-                $hist = $db->getCommandHistory($sid, $limit, $accessed);
+                [$sid, $limit, $start, $accessed] = [$root['sid'], $args['limit'], $args['start'], $args['accessed']];
+                $hist = $db->getCommandHistory($sid, $limit, $start, $accessed);
 
                 foreach($hist as &$h) $h['session'] = $root['Session'];
                 foreach($hist as &$h) $h['fieldType'] = $root['Field'];
@@ -66,7 +66,8 @@ class resolver {
                 return $hist;
             },
             'boundaries' => function($root, $args, $ctx, $inf) use ($db) {
-                $bndry = $db->getBoundariesByUser($root['uid']);
+                $start = $args['start']; /// Start index
+                $bndry = $db->getBoundariesByUser($root['uid'], $start);
 
                 foreach($bndry as &$b) $b['session'] = $root['Session'];
                 foreach($bndry as &$b) $b['state'] = $root['State'];

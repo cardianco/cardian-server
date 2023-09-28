@@ -10,22 +10,22 @@ type Mutation {
 
     createSession(typeId: ID!, mac: Int!): Session!
 
-    createBoundary(stateId: ID! = 1, poly: [Point!]): ID
-    updateBoundary(id: ID!, stateId: ID! = 1, poly: [Point!]): Boolean!
+    createBoundary(stateId: ID! = 1, poly: [PointInput!]): ID
+    updateBoundary(id: ID!, stateId: ID! = 1, poly: [PointInput!]): Boolean!
 
-    removeCommands(idList: ID!): Int
-    removeBoundaries(idList: ID): Int
+    removeCommands(idList: [ID!]): Int
+    removeBoundaries(idList: [ID!]): Int
     terminateSessions(idList: [ID!]): Int
 }
 
 type Query {
     user: User
-    boundaries: [Boundary!]
     session: Session
     sessions: [Session!]
     latestStatus: LatestStatus!
-    statusHistory(limit: Int! = 1, accessed: Boolean = null): [Status!]
-    commandHistory(limit: Int! = 1, accessed: Boolean = null): [Command!]
+    boundaries(start: Int! = -1): [Boundary!]
+    statusHistory(limit: Int! = 1, start: Int = -1, accessed: Boolean = null): [Status!]
+    commandHistory(limit: Int! = 1, start: Int = -1, accessed: Boolean = null): [Command!]
 }
 
 type DeviceType {
@@ -105,6 +105,11 @@ type LatestStatus {
 }
 
 type Point {
+    x: Float!
+    y: Float!
+}
+
+input PointInput {
     x: Float!
     y: Float!
 }

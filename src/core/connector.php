@@ -51,6 +51,17 @@ abstract class baseConnector {
     }
 
     /**
+     * @abstract Fetch and return all row of executed query
+     * @param string query, The SQL query to execute
+     * @param array args, Input argumants, based on PDO statement
+     */
+    public function statement(string $query = "", array $args = [], int $mode = \PDO::FETCH_ASSOC): array {
+        $stmnt = $this->connection->prepare($query);
+        $stmnt->execute($args);
+        return $stmnt->fetchAll($mode);
+    }
+
+    /**
      * @abstract Return rows and first row key as key
      * @param string $query
      */
