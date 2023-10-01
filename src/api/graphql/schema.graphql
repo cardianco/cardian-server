@@ -19,6 +19,10 @@ type Mutation {
 }
 
 type Query {
+    fields: [Field]
+    states: [State]
+    deviceTypes: [DeviceType]
+
     user: User
     session: Session
     sessions: [Session!]
@@ -26,6 +30,16 @@ type Query {
     boundaries(start: Int! = -1): [Boundary!]
     statusHistory(limit: Int! = 1, start: Int = -1, accessed: Boolean = null): [Status!]
     commandHistory(limit: Int! = 1, start: Int = -1, accessed: Boolean = null): [Command!]
+}
+
+input PointInput {
+    x: Float!
+    y: Float!
+}
+
+type Point {
+    x: Float!
+    y: Float!
 }
 
 type DeviceType {
@@ -102,14 +116,4 @@ type LatestStatus {
     id: ID!
     user: User!
     data: String
-}
-
-type Point {
-    x: Float!
-    y: Float!
-}
-
-input PointInput {
-    x: Float!
-    y: Float!
 }

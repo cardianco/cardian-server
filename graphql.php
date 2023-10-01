@@ -9,20 +9,53 @@ use GraphQL\Utils\BuildSchema;
 use \src\core\database;
 use \src\api\resolver;
 
-$sessionToken = $_SERVER['stoken'] ?? "";
-$userToken = $_SERVER['utoken'] ?? "";
+if (!function_exists('getallheaders')) {
+    function getallheaders() {
+        $headers = [];
+        $mapKeys = array(
+            'CONTENT_TYPE'   => 'Content-Type',
+            'CONTENT_LENGTH' => 'Content-Length',
+            'CONTENT_MD5'    => 'Content-Md5',
+        );
+
+        foreach ($_SERVER as $key => $value) {
+            if (str_starts_with($key, 'HTTP_')) {
+                $headers[str_replace(['_',' '], '-', substr($key, 5))] = $value;
+            } elseif (isset($copy_server[$key])) {
+                $headers[$mapKeys[$key]] = $value;
+            }
+        }
+        return array_change_key_case($headers, CASE_LOWER);
+    }
+}
+
+$sessionToken = getallheaders()['stoken'] ?? "";
+$userToken = getallheaders()['utoken'] ?? "";
 $ip = $_SERVER['REMOTE_ADDR'] ?? "";
 
 try {
-    // assert($sessionToken || $userToken, 'No session or user token provided.');
+    assert($sessionToken || $userToken, 'No session or user token provided.');
+    // $userId = $sessionId = 1;
 
     $cdb = new database("db_cardian", "root", "");
 
-    $userId = 1;//$cdb->findUserIdByToken($userToken);
-    $sessionId = 1;//$cdb->findSessionIdByToken($sessionToken);
+    if($sessionToken) {
+        $result = $cdb->findSessionIdByToken($sessionToken) ?? [];
+        $userId = $result['uid'] ?? -1;
+        $sessionId = $result['id'] ?? -1;
+
+        assert(!empty($result), 'No user found with the provided session token. Please create a session first.');
+    } else if($userToken) {
+        $result = $cdb->findUserIdByToken($userToken) ?? [];
+        $userId = $result['uid'] ?? -1;
+        $sessionId = -1;
+
+        assert(!empty($result), 'No user was found with the provided user token. Please register an account or contact the website admin.');
+    }
 
     $schema = BuildSchema::build(file_get_contents(__DIR__."/src/api/graphql/schema.graphql"));
     $rootValue = resolver::values($cdb);
+
     $rootValue['uid'] = $userId;
     $rootValue['sid'] = $sessionId;
     $rootValue['ip'] = $ip;

@@ -31,13 +31,17 @@ class resolver {
                 $user['info'] = $inf->rootValue['UserInfo'];
                 return $user;
             },
-            'Field' => fn($values, $args, $ctx, $inf) =>  $db->getFields($values['fid']),
-            'State' => fn($values, $args, $ctx, $inf) =>  $db->getStates($values['stid']),
-            'DeviceType' => fn($values, $args, $ctx, $inf) =>  $db->getDeviceType($values['tid']),
+            'Field' => fn($values, $args, $ctx, $inf) =>  $db->getFields($values['fid'] ?? null),
+            'State' => fn($values, $args, $ctx, $inf) =>  $db->getStates($values['stid'] ?? null),
+            'DeviceType' => fn($values, $args, $ctx, $inf) =>  $db->getDeviceType($values['tid'] ?? null),
             'UserInfo' => fn($values, $args, $ctx, $inf) =>  $db->getUserInfo($values['id'])
         ];
 
         $rootResolvers = [
+            'fields' => $typeResolvers['Field'],
+            'states' => $typeResolvers['State'],
+            'deviceTypes' => $typeResolvers['DeviceType'],
+
             'user' => $typeResolvers['User'],
             'session' => $typeResolvers['Session'],
             'latestStatus' => $typeResolvers['LatestStatus'],
