@@ -3,6 +3,7 @@
 require_once __DIR__.'/vendor/autoload.php';
 require_once __DIR__.'/src/core/database.php';
 require_once __DIR__.'/src/api/graphql/resolver.php';
+require_once __DIR__.'/config.php';
 
 use GraphQL\GraphQL;
 use GraphQL\Utils\BuildSchema;
@@ -37,7 +38,7 @@ try {
     assert($sessionToken || $userToken, 'No session or user token provided.');
     // $userId = $sessionId = 1;
 
-    $cdb = new database("db_cardian", "root", "");
+    $cdb = new database(constant('DB_NAME'), constant('DB_USER'), constant('DB_PASS'));
 
     if($sessionToken) {
         $result = $cdb->findSessionIdByToken($sessionToken) ?? [];

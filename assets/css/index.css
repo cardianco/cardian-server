@@ -1,0 +1,14 @@
+@font-face {
+    font-family: exo2;
+    src: url(../fonts/exo-2.woff2);
+}
+
+:root {
+    font-family: exo2;
+    color: #323436;
+}
+
+p > a {
+    color: darkcyan;
+    text-decoration: none;
+}
