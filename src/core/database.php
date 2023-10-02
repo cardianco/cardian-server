@@ -50,7 +50,7 @@ class database extends baseConnector {
      */
     public function findSessionIdByToken(string $token): array {
         $token = $this->strEscape($token);
-        return $this->first("SELECT id, `uid` FROM `users_sessions` WHERE authtoken=$token");
+        return $this->first("SELECT id, `uid` FROM `users_sessions` WHERE hex(authtoken)=$token");
     }
 
     /**
@@ -200,7 +200,7 @@ class database extends baseConnector {
      */
     public function addStatus(int $sid, int $fid, string $data): ?int {
         $data = $this->strEscape($data);
-        $this->exec("INSERT INTO db_cardian.statuses(`sid`, fid, `data`) VALUES($sid, $fid, $data)");
+        $this->exec("INSERT INTO statuses(`sid`, fid, `data`) VALUES($sid, $fid, $data)");
         return $this->connection->lastInsertId();
     }
 
@@ -243,7 +243,7 @@ class database extends baseConnector {
     public function createSession(int $uid, int $typeId, int $mac, string $ip, int $try = 5): array {
         $ip = $this->strEscape($ip);
         do {
-            $res = $this->exec("INSERT INTO db_cardian.users_sessions(`uid`, tid, authtoken, mac, ip)
+            $res = $this->exec("INSERT INTO users_sessions(`uid`, tid, authtoken, mac, ip)
                                     VALUES($uid, $typeId, UNHEX(SHA2(RAND(), 256)), $mac, $ip);");
             $try--;
         } while(empty($res) && $try);

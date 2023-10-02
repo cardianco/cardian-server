@@ -24,20 +24,21 @@ if (!function_exists('getallheaders')) {
                 $headers[str_replace(['_',' '], '-', substr($key, 5))] = $value;
             } elseif (isset($copy_server[$key])) {
                 $headers[$mapKeys[$key]] = $value;
+            } else {
+                $headers[$key] = $value;
             }
         }
         return array_change_key_case($headers, CASE_LOWER);
     }
 }
 
-$sessionToken = getallheaders()['stoken'] ?? "";
-$userToken = getallheaders()['utoken'] ?? "";
+$headers = array_change_key_case(getallheaders(), CASE_LOWER) ?? [];
+
+$sessionToken = $headers['stoken'] ?? "";
+$userToken = $headers['utoken'] ?? "";
 $ip = $_SERVER['REMOTE_ADDR'] ?? "";
 
 try {
-    assert($sessionToken || $userToken, 'No session or user token provided.');
-    // $userId = $sessionId = 1;
-
     $cdb = new database(constant('DB_NAME'), constant('DB_USER'), constant('DB_PASS'));
 
     if($sessionToken) {
@@ -52,6 +53,9 @@ try {
         $sessionId = -1;
 
         assert(!empty($result), 'No user was found with the provided user token. Please register an account or contact the website admin.');
+    } else {
+        throw new Exception('No session or user token is provided.');
+        // $userId = $sessionId = 1;
     }
 
     $schema = BuildSchema::build(file_get_contents(__DIR__."/src/api/graphql/schema.graphql"));

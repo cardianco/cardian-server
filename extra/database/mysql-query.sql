@@ -29,7 +29,7 @@ CREATE TABLE fields (
 
 -- initial fields:
 INSERT INTO db_cardian.fields(`name`,`desc`)
-VALUES ('location',''),('temperature',''),('json','');
+VALUES ('json',''),('temperature',''),('location','');
 
 CREATE TABLE users (
     id bigint NOT NULL PRIMARY KEY AUTO_INCREMENT,
