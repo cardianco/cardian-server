@@ -55,7 +55,6 @@ try {
         assert(!empty($result), 'No user was found with the provided user token. Please register an account or contact the website admin.');
     } else {
         throw new Exception('No session or user token is provided.');
-        // $userId = $sessionId = 1;
     }
 
     $schema = BuildSchema::build(file_get_contents(__DIR__."/src/api/graphql/schema.graphql"));
