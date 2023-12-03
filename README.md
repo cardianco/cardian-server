@@ -13,9 +13,9 @@ git clone --recursive https://github.com/SMR76/cardian-server.git
 ```
 ## To-Do
 + [ ] Add Support for `PostgreSQL`.
-+ [ ] Add Table for user information.
 + [ ] Instead of purge events, use partitions.
 + [ ] Request limit per IP.
++ [x] Add Table for user information.
 
 ## Dependencies
 + [GraphQL](https://webonyx.github.io/graphql-php) (*MIT license*)

@@ -5,10 +5,98 @@
 
 :root {
     font-family: exo2;
-    color: #323436;
 }
 
-p > a {
-    color: darkcyan;
+.light {
+    --background: #f1f2f3;
+    --text: #010203;
+    --text-75: #515253;
+    --link: #2779e3;
+}
+
+.dark {
+    --background: #010203;
+    --text: #e1e2e3;
+    --text-75: #a1a2a3;
+    --link: #0476b8;
+}
+
+body {
+    color: var(--text);
+    background-color: var(--background);
+
+    margin: auto;
+    max-width: 700px;
+}
+
+a {
+    color: var(--link);
     text-decoration: none;
+}
+
+a:hover {
+    font-weight: bold;
+}
+
+section {
+    position: relative;
+    padding: 0 25px;
+    margin-bottom: 125px;
+}
+
+#head p { text-align: justify; padding-left: 10px; opacity: 0.8; }
+
+#mascot {
+    left: calc(50% - 200px);
+    width: 400px;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    opacity: 0.5;
+}
+
+#preview {
+    width: 100%;
+    height: fit-content;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+#preview .page {
+    position: relative;
+    width: 30%;
+
+    border-radius: 5px;
+    color: var(--text);
+    background-color: var(--background);
+    /* border: 1px solid var(--link); */
+    box-shadow: 0 0 2px var(--text-75);
+
+    transition: transform 0.2s;
+    transform: perspective(180px) rotateX(0deg) rotateY(0deg);
+}
+
+#preview .page img { position: relative; }
+#preview .page #map,
+#preview .page canvas {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    opacity: 0.8;
+    border-radius: 5px;
+    background-color: var(--text);
+}
+
+@media screen and (max-width: 600px) {
+    #preview {
+        align-items: center;
+        flex-direction: column;
+    }
+
+    #preview .page {
+        width: 60%;
+        max-width: 200px;
+        margin: 15px;
+    }
 }

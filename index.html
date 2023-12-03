@@ -6,21 +6,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet" href="assets/css/index.css">
-    <script src="assets/js/index.js"></script>
+    <script type="module" src="assets/js/index.js"></script>
 
     <title>Cardian</title>
 </head>
-<body>
-    <h2>
-        Cardian
-    </h2>
-    <p>
-        This is cardian's website.<br>
-        Please refer to <a href="/graphql.php">graphql.php</a> to use <em>GraphQL</em> API.
-    </p>
-    <p>
-        Github: <a target="_blank" href="https://github.com/cardianco">@cardianco</a><br>
-        Author: <a target="_blank" href="https://github.com/0smr">@0smr</a>
-    </p>
+<body class="dark">
+    <section id="mascot">
+        <img src="assets/images/mascot.svg">
+    </section>
+    <section id="head">
+        <h2> Cardian </h2>
+        <p>
+            This is cardian's website.<br>
+            Please refer to <a href="/graphql.php">graphql.php</a> to use <em>GraphQL</em> API.
+        </p>
+        <p>
+            Github: <a target="_blank" href="https://github.com/cardianco">@cardianco</a><br>
+            Author: <a target="_blank" href="https://github.com/0smr">@0smr</a>
+        </p>
+        <p>
+            Cardian project is a cutting-edge car alarm system with a sleek and modern GUI designed using openGL, the Qt based cross-platform application.
+        </p>
+    </section>
+
+    <section>
+        <h2> Previews </h2>
+
+        <div id="preview">
+            <div class="page">
+                <canvas></canvas>
+                <img src="/assets/images/page-advanced.svg">
+            </div>
+            <div class="page">
+                <canvas></canvas>
+                <img src="/assets/images/page-home.svg">
+            </div>
+            <div class="page">
+                <img id="map" src="/assets/images/map.webp" width="100%">
+                <img src="/assets/images/page-navigation.svg">
+            </div>
+        </div>
+    </section>
 </body>
 </html>
