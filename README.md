@@ -1,9 +1,10 @@
 ## Cardian Server
 Server side of Cardian app.<br>
+Website: [*cardian.ir*](https://www.cardian.ir)
 
 APIs list:
-+ GraphQL API
-+ Socket Server
++ [x] GraphQL API
++ [ ] Socket Server *WIP*
 
 ## Usage
 ### Clone
@@ -11,6 +12,7 @@ APIs list:
 git clone --recursive https://github.com/SMR76/cardian-server.git
 [ -d "cardian-server" ] && cd "cardian-server" && composer update
 ```
+
 ## To-Do
 + [ ] Add Support for `PostgreSQL`.
 + [ ] Instead of purge events, use partitions.
